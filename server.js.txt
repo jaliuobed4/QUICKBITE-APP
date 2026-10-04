@@ -1,0 +1,24 @@
+// npm i express cors node-fetch
+import express from 'express'
+import cors from 'cors'
+const app = express()
+app.use(cors()); app.use(express.json())
+const codes = new Map()
+
+app.post('/api/send-otp', async (req,res)=>{
+  const {phone} = req.body
+  const code = Math.floor(100000 + Math.random()*900000).toString()
+  codes.set(phone, code)
+  setTimeout(()=>codes.delete(phone), 5*60*1000)
+  // REAL SMS
+  await fetch(`https://sms.arkesel.com/sms/api?action=send-sms&api_key=${process.env.ARKESEL_KEY}&to=${phone}&from=QuickBite&sms=Your QuickBite code is ${code}`)
+  res.json({success:true})
+})
+
+app.post('/api/verify-otp', (req,res)=>{
+  const {phone, code} = req.body
+  if(codes.get(phone)===code){ codes.delete(phone); res.json({success:true}) }
+  else res.json({success:false, error:"Invalid code"})
+})
+
+app.listen(3000, ()=>console.log("OTP server running"))
