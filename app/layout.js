@@ -1,0 +1,1 @@
+export default function RootLayout({children}){return require("react").createElement("html",null,require("react").createElement("body",null,children))}
